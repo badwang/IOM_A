@@ -1,0 +1,41 @@
+<CodeGenerationInfo>
+  <ToolchainSettings>
+    <option>
+      <name>PE_G_4PEx_ToolChain_Compiler_SearchUserPaths</name>
+      <values lines_count="2">
+        <Line>"${ProjDirPath}/Sources"</Line>
+        <Line>"${ProjDirPath}/Generated_Code"</Line>
+      </values>
+    </option>
+  </ToolchainSettings>
+  <GeneratedFilesList>
+    <GeneratedByPE>
+      <File Name="Generated_Code/Vectors.c" FileDate="2015-02-15, 18:09:54" FileAge="1423998594456" FileType="45637" CompNumb="4" />
+      <File Name="Generated_Code/AD1.c" FileDate="2015-02-15, 18:09:53" FileAge="1423998593824" FileType="45637" CompNumb="28" />
+      <File Name="Generated_Code/Dout.h" FileDate="2015-02-15, 17:35:41" FileAge="1423996541443" FileType="45637" CompNumb="13" />
+      <File Name="Documentation/IOM_A_Settings.xml" FileDate="2015-02-15, 18:09:55" FileAge="1423998595768" FileType="3072" />
+      <File Name="Generated_Code/AS1.h" FileDate="2015-02-15, 17:35:41" FileAge="1423996541589" FileType="45637" CompNumb="8" />
+      <File Name="Generated_Code/Dout.c" FileDate="2015-02-15, 17:35:41" FileAge="1423996541422" FileType="45637" CompNumb="13" />
+      <File Name="Generated_Code/Timer.h" FileDate="2015-02-15, 17:35:41" FileAge="1423996541396" FileType="45637" CompNumb="14" />
+      <File Name="Generated_Code/AS1.c" FileDate="2015-02-15, 17:35:41" FileAge="1423996541559" FileType="45637" CompNumb="8" />
+      <File Name="Generated_Code/Din.h" FileDate="2015-02-15, 18:09:54" FileAge="1423998594035" FileType="45637" CompNumb="24" />
+      <File Name="Generated_Code/Timer.c" FileDate="2015-02-15, 17:35:41" FileAge="1423996541373" FileType="45637" CompNumb="14" />
+      <File Name="Generated_Code/PE_Const.h" FileDate="2015-02-15, 17:35:41" FileAge="1423996541298" FileType="45637" />
+      <File Name="Generated_Code/Din.c" FileDate="2015-02-15, 18:09:54" FileAge="1423998594115" FileType="45637" CompNumb="24" />
+      <File Name="Documentation/IOM_A_SIGNALS.txt" FileDate="2015-02-16, 17:28:22" FileAge="1424082502702" FileType="3072" />
+      <File Name="Generated_Code/Cpu.h" FileDate="2015-02-15, 17:35:41" FileAge="1423996541228" FileType="45637" CompNumb="4" />
+      <File Name="Generated_Code/PE_Types.h" FileDate="2015-02-15, 17:35:41" FileAge="1423996541351" FileType="45637" />
+      <File Name="Sources/Events.h" FileDate="2015-02-15, 18:09:54" FileAge="1423998594951" FileType="131328" />
+      <File Name="Generated_Code/Cpu.c" FileDate="2015-02-15, 18:09:54" FileAge="1423998594353" FileType="45637" CompNumb="4" />
+      <File Name="Documentation/IOM_A.txt" FileDate="2015-02-15, 18:09:55" FileAge="1423998595896" FileType="3072" />
+      <File Name="Project_Settings/Linker_Files/ProcessorExpert.prm" FileDate="2015-02-15, 17:35:41" FileAge="1423996541182" FileType="8" CompNumb="4" />
+      <File Name="Generated_Code/IO_Map.h" FileDate="2015-02-15, 17:35:41" FileAge="1423996541277" FileType="45637" />
+      <File Name="Sources/Events.c" FileDate="2015-02-09, 14:28:18" FileAge="1423466898298" FileType="131328" />
+      <File Name="Sources/main.c" FileDate="2015-02-16, 17:28:09" FileAge="1424082489627" FileType="128" />
+      <File Name="Generated_Code/IO_Map.c" FileDate="2015-02-15, 17:35:41" FileAge="1423996541253" FileType="45637" />
+      <File Name="Generated_Code/PE_Error.h" FileDate="2015-02-15, 17:35:41" FileAge="1423996541324" FileType="45637" />
+      <File Name="Generated_Code/AD1.h" FileDate="2015-02-15, 18:09:53" FileAge="1423998593848" FileType="45637" CompNumb="28" />
+    </GeneratedByPE>
+  </GeneratedFilesList>
+  <CodeGenReference>4</CodeGenReference>
+</CodeGenerationInfo>
