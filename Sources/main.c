@@ -49,13 +49,18 @@ uint8_t UART_RXBuf[32]={0};
 uint8_t TXData[20]={0};
 
 uint8_t AD_Result[8]={0};
+uint16_t AD_Last_Val[4]={0};
+uint16_t AD_Val[4]={0};
+uint8_t Din_Last_Val[2]={0};
 
 uint8_t Self_Short_Addr[2]={0};
 uint8_t MAC_Addr[8]={0};
 uint8_t Device_Num[2]={0};
 uint8_t UT_SN=0;
+uint8_t Compare_Flag=0;
 
 uint16_t MainCycle=0;
+uint8_t CheckTime=0;
 
 const uint8_t Read_Short_Addr[7]={0xFC, 0x00, 0x91, 0x04, 0xC4, 0xD4, 0x29};
 const uint8_t Read_Dev_Command[7]={0xFC, 0x00, 0x91, 0x6A, 0xBA, 0xDA, 0x8B};
@@ -67,15 +72,18 @@ uint8_t Get_Device_Num(void);
 uint8_t Get_Mac(void);
 uint8_t Get_Short_Addr(void);
 uint8_t RX_Poll(void);
+void AD_Update(void);
 
-#define Report_Cycle 500
+#define Report_Cycle 500					//This defines periodical report interval. 500x7ms=3.5s.
+#define Check_Interval 4					//This defines input change detection interval. 4x7ms=28ms.
+#define AD_Change_Threshold 0x20			//This defines analog input change threshold to trigger reporting.
 
 void main(void)
 {
   /* Write your local variable definition here */
 
 	uint8_t i, j;
-	word tmp;
+	uint16_t tmp;
 	
   /*** Processor Expert internal initialization. DON'T REMOVE THIS CODE!!! ***/
   PE_low_level_init();
@@ -137,38 +145,65 @@ void main(void)
   
   for(;;){
 	  
+	  CheckTime=0;
 	  while(RX_Frame()!=ERR_OK){
 		  
 		  MainCycle++;
-		  if(MainCycle > Report_Cycle){								//Check if Report cycle is reached.
-			  MainCycle=0;
-			  if(AD1_Measure(1)==ERR_OK){
-				  (void) AD1_GetChanValue16(0, &tmp);
-				  tmp=tmp>>6;
-				  AD_Result[0]= (byte) (tmp>>8);
-				  AD_Result[1]= (byte) (tmp&0x00FF);
-				  (void) AD1_GetChanValue16(1, &tmp);
-				  tmp=tmp>>6;
-				  AD_Result[2]= (byte) (tmp>>8);
-				  AD_Result[3]= (byte) (tmp&0x00FF);
-				  (void) AD1_GetChanValue16(2, &tmp);
-				  tmp=tmp>>6;
-				  AD_Result[4]= (byte) (tmp>>8);
-				  AD_Result[5]= (byte) (tmp&0x00FF);
-				  (void) AD1_GetChanValue16(3, &tmp);
-				  tmp=tmp>>6;
-				  AD_Result[6]= (byte) (tmp>>8);
-				  AD_Result[7]= (byte) (tmp&0x00FF);
-			  }else{
-				  for(i=0;i<8;i++){
-					  AD_Result[i]=0xFF;						//Indicate ADC fails.
+		  CheckTime++;
+		  
+		  if(CheckTime==Check_Interval){
+			  CheckTime=0;
+			  
+			  AD_Update();
+			  
+			  Compare_Flag=0;
+			  //Compare AD data to see if big changes.
+			  for(i=0;i<4;i++){
+				  if(AD_Val[i]>AD_Last_Val[i]){
+					  tmp=AD_Val[i]-AD_Last_Val[i];
+				  }else{
+					  tmp=AD_Last_Val[i]-AD_Val[i];
+				  }
+				  if(tmp > AD_Change_Threshold){
+					  Compare_Flag=1;
+					  break;
 				  }
 			  }
+			  
+			  if(Compare_Flag==1 || (bool)Din_Last_Val[0]!=Din_GetBit(0) || (bool)Din_Last_Val[1]!=Din_GetBit(1)){
+				  // Value changed, need to report new value.
+				  for(i=0;i<8;i++){
+					  TXData[i]=AD_Result[i];						//Copy AD data to TX data.
+				  }
+				  for(i=0;i<4;i++){
+					  AD_Last_Val[i]=AD_Val[i];						//Save current AD values.
+				  }
+				  for(i=0;i<2;i++){
+					  TXData[i+8]=Din_GetBit(i);					//Get Din.
+					  Din_Last_Val[i]=TXData[i+8];					//Save current Din values.
+				  }
+				  for(i=0;i<2;i++){
+					  TXData[i+10]=Dout_GetBit(i);					//Get Dout.
+				  }
+				  TX_Report(TXData, 12);								//Send report frame to UART.
+			  }
+		  }
+		  
+		  if(MainCycle >= Report_Cycle){								//Check if Report cycle is reached.
+			  MainCycle=0;
+			  CheckTime=0;
+
+			  AD_Update();
+			  
 			  for(i=0;i<8;i++){
 				  TXData[i]=AD_Result[i];						//Copy AD data to TX data.
 			  }
+			  for(i=0;i<4;i++){
+				  AD_Last_Val[i]=AD_Val[i];						//Save current AD values.
+			  }
 			  for(i=0;i<2;i++){
 				  TXData[i+8]=Din_GetBit(i);					//Get Din.
+				  Din_Last_Val[i]=TXData[i+8];					//Save current Din values.
 			  }
 			  for(i=0;i<2;i++){
 				  TXData[i+10]=Dout_GetBit(i);					//Get Dout.
@@ -176,36 +211,20 @@ void main(void)
 			  TX_Report(TXData, 12);								//Send report frame to UART.
 		  }
 	  }
+	  
 	  //Valid incoming frame got.
 	  if(UART_RXBuf[9]==0x03){
 		  //CMD 0x03
-		  if(AD1_Measure(1)==ERR_OK){
-			  (void) AD1_GetChanValue16(0, &tmp);
-			  tmp=tmp>>6;
-			  AD_Result[0]= (byte) (tmp>>8);
-			  AD_Result[1]= (byte) (tmp&0x00FF);
-			  (void) AD1_GetChanValue16(1, &tmp);
-			  tmp=tmp>>6;
-			  AD_Result[2]= (byte) (tmp>>8);
-			  AD_Result[3]= (byte) (tmp&0x00FF);
-			  (void) AD1_GetChanValue16(2, &tmp);
-			  tmp=tmp>>6;
-			  AD_Result[4]= (byte) (tmp>>8);
-			  AD_Result[5]= (byte) (tmp&0x00FF);
-			  (void) AD1_GetChanValue16(3, &tmp);
-			  tmp=tmp>>6;
-			  AD_Result[6]= (byte) (tmp>>8);
-			  AD_Result[7]= (byte) (tmp&0x00FF);
-		  }else{
-			  for(i=0;i<8;i++){
-				  AD_Result[i]=0xFF;						//Indicate ADC fails.
-			  }
-		  }
+		  AD_Update();
 		  for(i=0;i<8;i++){
 			  TXData[i]=AD_Result[i];						//Copy AD data to TX data.
 		  }
+		  for(i=0;i<4;i++){
+			  AD_Last_Val[i]=AD_Val[i];						//Save current AD values.
+		  }
 		  for(i=0;i<2;i++){
 			  TXData[i+8]=Din_GetBit(i);					//Get Din.
+			  Din_Last_Val[i]=TXData[i+8];					//Save current Din values.
 		  }
 		  for(i=0;i<2;i++){
 			  TXData[i+10]=Dout_GetBit(i);					//Get Dout.
@@ -216,33 +235,16 @@ void main(void)
 		  for(i=0;i<2;i++){
 			  Dout_PutBit(i, UART_RXBuf[11+i]);				//Control DO output.
 		  }
-		  if(AD1_Measure(1)==ERR_OK){
-			  (void) AD1_GetChanValue16(0, &tmp);
-			  tmp=tmp>>6;
-			  AD_Result[0]= (byte) (tmp>>8);
-			  AD_Result[1]= (byte) (tmp&0x00FF);
-			  (void) AD1_GetChanValue16(1, &tmp);
-			  tmp=tmp>>6;
-			  AD_Result[2]= (byte) (tmp>>8);
-			  AD_Result[3]= (byte) (tmp&0x00FF);
-			  (void) AD1_GetChanValue16(2, &tmp);
-			  tmp=tmp>>6;
-			  AD_Result[4]= (byte) (tmp>>8);
-			  AD_Result[5]= (byte) (tmp&0x00FF);
-			  (void) AD1_GetChanValue16(3, &tmp);
-			  tmp=tmp>>6;
-			  AD_Result[6]= (byte) (tmp>>8);
-			  AD_Result[7]= (byte) (tmp&0x00FF);
-		  }else{
-			  for(i=0;i<8;i++){
-				  AD_Result[i]=0xFF;						//Indicate ADC fails.
-			  }
-		  }
+		  AD_Update();
 		  for(i=0;i<8;i++){
 			  TXData[i]=AD_Result[i];						//Copy AD data to TX data.
 		  }
+		  for(i=0;i<4;i++){
+			  AD_Last_Val[i]=AD_Val[i];						//Save current AD values.
+		  }
 		  for(i=0;i<2;i++){
 			  TXData[i+8]=Din_GetBit(i);					//Get Din.
+			  Din_Last_Val[i]=TXData[i+8];					//Save current Din values.
 		  }
 		  for(i=0;i<2;i++){
 			  TXData[i+10]=Dout_GetBit(i);					//Get Dout.
@@ -539,6 +541,47 @@ uint8_t Get_Short_Addr(void)
 	return ERR_OK;
 }
 
+
+//***********************************************************************
+// Subroutine AD_Update
+// Do AD convert on 4 channels and update result to AD_Val[] and AD_Result[].
+//***********************************************************************
+void AD_Update(void)
+{
+	uint8_t i;
+	uint16_t tmp;
+	
+	  if(AD1_Measure(1)==ERR_OK){
+		  (void) AD1_GetChanValue16(0, &tmp);
+		  tmp=tmp>>6;
+		  AD_Val[0]=tmp;
+		  AD_Result[0]= (byte) (tmp>>8);
+		  AD_Result[1]= (byte) (tmp&0x00FF);
+		  (void) AD1_GetChanValue16(1, &tmp);
+		  tmp=tmp>>6;
+		  AD_Val[1]=tmp;
+		  AD_Result[2]= (byte) (tmp>>8);
+		  AD_Result[3]= (byte) (tmp&0x00FF);
+		  (void) AD1_GetChanValue16(2, &tmp);
+		  tmp=tmp>>6;
+		  AD_Val[2]=tmp;
+		  AD_Result[4]= (byte) (tmp>>8);
+		  AD_Result[5]= (byte) (tmp&0x00FF);
+		  (void) AD1_GetChanValue16(3, &tmp);
+		  tmp=tmp>>6;
+		  AD_Val[3]=tmp;
+		  AD_Result[6]= (byte) (tmp>>8);
+		  AD_Result[7]= (byte) (tmp&0x00FF);
+	  }else{
+		  for(i=0;i<8;i++){
+			  AD_Result[i]=0xFF;						//Indicate ADC fails.
+		  }
+		  for(i=0;i<4;i++){
+			  AD_Val[i]=0xFFFF;							//Indicate ADC fails.
+		  }
+	  }
+
+}
 
 /*!
 ** @}
