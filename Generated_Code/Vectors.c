@@ -5,7 +5,7 @@
 **     Processor   : MC9S08PA4VTJ
 **     Version     : Component 01.105, Driver 01.40, CPU db: 3.00.000
 **     Compiler    : CodeWarrior HCS08 C Compiler
-**     Date/Time   : 2015-02-15, 19:09, # CodeGen: 1
+**     Date/Time   : 2015-05-02, 22:09, # CodeGen: 5
 **     Abstract    :
 **         This component "MC9S08PA4_20" contains initialization 
 **         of the CPU and provides basic methods and events for 
@@ -64,6 +64,7 @@
 #include "Dout.h"
 #include "Timer.h"
 #include "AD1.h"
+#include "WDog.h"
 
 /*lint -save  -e950 Disable MISRA rule (1.1) checking. */
 static void (* near const _vect[])(void) @0xFFB0 = { /* Interrupt vector table */

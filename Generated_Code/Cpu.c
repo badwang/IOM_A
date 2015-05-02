@@ -7,7 +7,7 @@
 **     Version     : Component 01.105, Driver 01.40, CPU db: 3.00.000
 **     Datasheet   : MC9S08PA4RM Rev. 0 Draft B, 10/2011
 **     Compiler    : CodeWarrior HCS08 C Compiler
-**     Date/Time   : 2015-02-15, 19:09, # CodeGen: 1
+**     Date/Time   : 2015-05-02, 22:09, # CodeGen: 5
 **     Abstract    :
 **         This component "MC9S08PA4_20" contains initialization 
 **         of the CPU and provides basic methods and events for 
@@ -72,6 +72,7 @@
 #include "Dout.h"
 #include "Timer.h"
 #include "AD1.h"
+#include "WDog.h"
 #include "PE_Types.h"
 #include "PE_Error.h"
 #include "PE_Const.h"
@@ -175,13 +176,55 @@ loop:
      */
     pshh                               /* (2 c: 241.13 ns) backup H */
     pshx                               /* (2 c: 241.13 ns) backup X */
-    ldhx #$0065                        /* (3 c: 361.69 ns) number of iterations */
+    ldhx #$0015                        /* (3 c: 361.69 ns) number of iterations */
 label0:
+    pshh                               /*(2 c: 241.13 ns) backup H before COP reset */
+    pshx                               /* (2 c: 241.13 ns) backup X before COP reset */
+    TPA
+    SEI
+    LDHX #-23038
+    STHX WDOG_CNT
+    LDHX #-19328
+    STHX WDOG_CNT
+    TAP
+    pulx                               /* (2 c: 241.13 ns) restore X after COP reset */
+    pulh                               /* (2 c: 241.13 ns) restore H after COP reset */
     aix #-1                            /* (2 c: 241.13 ns) decrement H:X */
     cphx #0                            /* (3 c: 361.69 ns) compare it to zero */
-    bne label0                         /* (3 c: 361.69 ns) repeat 101x */
+    bne label0                         /* (3 c: 361.69 ns) repeat 21x */
     pulx                               /* (3 c: 361.69 ns) restore X */
     pulh                               /* (3 c: 361.69 ns) restore H */
+    nop                                /* (1 c: 120.56 ns) wait for 1 c */
+    nop                                /* (1 c: 120.56 ns) wait for 1 c */
+    nop                                /* (1 c: 120.56 ns) wait for 1 c */
+    nop                                /* (1 c: 120.56 ns) wait for 1 c */
+    nop                                /* (1 c: 120.56 ns) wait for 1 c */
+    nop                                /* (1 c: 120.56 ns) wait for 1 c */
+    nop                                /* (1 c: 120.56 ns) wait for 1 c */
+    nop                                /* (1 c: 120.56 ns) wait for 1 c */
+    nop                                /* (1 c: 120.56 ns) wait for 1 c */
+    nop                                /* (1 c: 120.56 ns) wait for 1 c */
+    nop                                /* (1 c: 120.56 ns) wait for 1 c */
+    nop                                /* (1 c: 120.56 ns) wait for 1 c */
+    nop                                /* (1 c: 120.56 ns) wait for 1 c */
+    nop                                /* (1 c: 120.56 ns) wait for 1 c */
+    nop                                /* (1 c: 120.56 ns) wait for 1 c */
+    nop                                /* (1 c: 120.56 ns) wait for 1 c */
+    nop                                /* (1 c: 120.56 ns) wait for 1 c */
+    nop                                /* (1 c: 120.56 ns) wait for 1 c */
+    nop                                /* (1 c: 120.56 ns) wait for 1 c */
+    nop                                /* (1 c: 120.56 ns) wait for 1 c */
+    nop                                /* (1 c: 120.56 ns) wait for 1 c */
+    nop                                /* (1 c: 120.56 ns) wait for 1 c */
+    nop                                /* (1 c: 120.56 ns) wait for 1 c */
+    nop                                /* (1 c: 120.56 ns) wait for 1 c */
+    nop                                /* (1 c: 120.56 ns) wait for 1 c */
+    nop                                /* (1 c: 120.56 ns) wait for 1 c */
+    nop                                /* (1 c: 120.56 ns) wait for 1 c */
+    nop                                /* (1 c: 120.56 ns) wait for 1 c */
+    nop                                /* (1 c: 120.56 ns) wait for 1 c */
+    nop                                /* (1 c: 120.56 ns) wait for 1 c */
+    nop                                /* (1 c: 120.56 ns) wait for 1 c */
     /* 100 us delay block end */
     aix #-1                            /* us100 parameter is passed via H:X registers */
     cphx #0
@@ -214,12 +257,13 @@ void _EntryPoint(void)
   setReg16(WDOG_CNT, 0xC520U);         /* First part of the WDG unlock sequence */ 
   /* WDOG_CNT: CNT=0xD928 */
   setReg16(WDOG_CNT, 0xD928U);         /* Second part of the WDG unlock sequence */ 
-  /* WDOG_TOVAL: TOVAL=4 */
-  setReg16(WDOG_TOVAL, 0x04U);          
-  /* WDOG_CS2: WIN=0,FLG=0,??=0,PRES=0,??=0,??=0,CLK=1 */
-  setReg8(WDOG_CS2, 0x01U);             
-  /* WDOG_CS1: EN=0,INT=0,UPDATE=0,TST=0,DBG=0,WAIT=0,STOP=0 */
-  setReg8(WDOG_CS1, 0x00U);            /* Disable watchdog */ 
+  /*  Initialization of Init_WDOG */
+  /* WDOG_CS1: EN=0,INT=0,UPDATE=1,TST=0,DBG=0,WAIT=1,STOP=1 */
+  setReg8(WDOG_CS1, 0x23U);             
+  /* WDOG_CS2: WIN=0,FLG=0,??=0,PRES=1,??=0,??=0,CLK=0 */
+  setReg8(WDOG_CS2, 0x10U);             
+  /* WDOG_TOVAL: TOVAL=0x1A00 */
+  setReg16(WDOG_TOVAL, 0x1A00U);        
   /* Common initialization of the write once registers */
   /* SYS_SOPT1: SCI0PS=0,BKGDPE=1,RSTPE=1,FWAKE=0,STOPE=0 */
   clrSetReg8Bits(SYS_SOPT1, 0x83U, 0x0CU); 
@@ -316,6 +360,12 @@ void PE_low_level_init(void)
   Timer_Init();
   /* ###  "AD1" init code ... */
   AD1_Init();
+  /* ###  WatchDog "WDog" init code ... */
+  WDog_Init();
+  /* WDOG_CNT: CNT=0xA602 */
+  setReg16(WDOG_CNT, 0xA602U);          
+  /* WDOG_CNT: CNT=0xB480 */
+  setReg16(WDOG_CNT, 0xB480U);          
   CCR_lock = (byte)0;
   __EI();                              /* Enable interrupts */
 }

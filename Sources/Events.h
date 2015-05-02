@@ -40,6 +40,7 @@
 #include "Dout.h"
 #include "Timer.h"
 #include "AD1.h"
+#include "WDog.h"
 
 
 void AS1_OnError(void);

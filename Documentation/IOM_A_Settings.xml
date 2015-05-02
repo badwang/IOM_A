@@ -553,5 +553,37 @@ autoselected pull
       <event name="OnEnd" v="don&amp;apos;t generate code" />
     </Events>
   </Bean>
+  <Bean name="WDog" type="WatchDog">
+    <Enabled v="Y" />
+    <Properties>
+      <Component_name v="WDog" />
+      <WatchDog_device v="WDOG" />
+      <WatchDog_action v="Reset CPU" />
+      <boolgroup name="Output pin" v="Disabled" />
+      <Period v="200 ms" />
+      <boolgroup name="Mode" v="Normal" />
+      <Write_protect v="no" />
+      <Stop_in_Stop_mode v="yes" />
+      <Stop_in_Wait_mode v="yes" />
+      <Debug_mode v="Disabled" />
+      <boolgroup name="Interrupt service/event" v="Disabled" />
+      <group name="Initialization">
+        <Enabled_in_init__code v="no" />
+      </group>
+      <boolgroup name="CPU clock/speed selection" v="Ignored" />
+    </Properties>
+    <Methods>
+      <Enable v="generate code" />
+      <Disable v="generate code" />
+      <Clear v="generate code" />
+      <Protect v="don&amp;apos;t generate code" />
+    </Methods>
+    <Events>
+      <Event_module_name v="Events" />
+      <event name="BeforeNewSpeed" v="don&amp;apos;t generate code" />
+      <event name="AfterNewSpeed" v="don&amp;apos;t generate code" />
+      <event name="OnWatchDog" v="don&amp;apos;t generate code" />
+    </Events>
+  </Bean>
 </PE_PROJECT_SETTINGS_DOCUMENTATION>
 

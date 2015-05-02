@@ -1,6 +1,6 @@
 <Analysispoints>
 	<Name>AnalysispointsManager</Name>
-	<ProjectPath>Z:/Freescale_MCU/MC9RS08/PA4/IOM_A/SaAnalysispointsManager.apconfig</ProjectPath>
+	<ProjectPath>Z:/D_WZ/Freescale_MCU/MC9RS08/PA4/IOM_A/SaAnalysispointsManager.apconfig</ProjectPath>
 	<MaxNumberOfCores>1</MaxNumberOfCores>
 	<Comments>Analysispoints Manager</Comments>
 	<IgnoreAll>false</IgnoreAll>
